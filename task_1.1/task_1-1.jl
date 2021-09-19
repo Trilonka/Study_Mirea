@@ -1,4 +1,4 @@
-function krest(r)
+function drawKrest(r)
     temper = temperature(r)
     list = (Nord, Sud, Nord,  Ost, West, Ost)
     pos = 0
@@ -17,7 +17,6 @@ function krest(r)
 
         end
 
-        putmarker!(r)
-        
+        putmarker!(r)       
     end
 end
