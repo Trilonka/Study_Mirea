@@ -272,27 +272,85 @@ ostream& operator<<(ostream& s, DoubleSidedStack<T1>& el)
 {
 	Element<T1>* current;
 	for (current = el.tail; current != NULL; current = current->prev)
-		s << *current << "; ";
+		s << *current << ", ";
 	return s;
 }
 
-class my_class
+// my_class class
+template <class T>
+class my_class : protected DoubleSidedStack<T>
 {
-public:
-	int data;
-	int key;
-	my_class() { key = 0; data = 1; cout << "\nmy_class default constructor"; }
-	my_class(int k, int v = 0) { key = k;data = v; cout << "\nmy_class constructor";}
+	my_class() : DoubleSidedStack<T>() { } // constructor (void) : my_class
+	virtual ~my_class() { } // virtual destructor
 
-	~my_class() { cout << "\nmy_class destructor"; }
+	virtual Element<T>* push(T value) // virtual push (value) - changed
+	{
+		Element<T>* pom = new Element<T>(value);
+		pom->next = DoubleSidedStack<T>::head;
+		DoubleSidedStack<T>::head->prev = pom;
+		DoubleSidedStack<T>::head = pom;
+		DoubleSidedStack<T>::count++;
+		return pom;
+	}
 
-	friend ostream& operator<<(ostream& s, my_class& value);
+	virtual Element<T>* pop() // virtual pop (void) - changed
+	{
+		Element<T>* pom = DoubleSidedStack<T>::head;
+		pom->next->prev = NULL;
+		pom->next = NULL;
+		DoubleSidedStack<T>::count--;
+		return pom;
+	}
 
 };
 
-ostream& operator<<(ostream& s, my_class& value)
+// Customer class
+class Customer
 {
-	s <<value.key<<", "<< value.data;
+public:
+	char* firstname;
+	char* lastname;
+	char* city;
+	char* street;
+	int houseNumber;
+	int apartmentNumber;
+	int accountNumber;
+	int averageCheckAmount;
+	// push - в начало 
+	// pop - из начала
+	// Поиск по фамилии, фильтр по средней сумме чека. (search, filter)
+	Customer()
+	{
+		firstname = lastname = city = street = NULL;
+		houseNumber = apartmentNumber =
+		accountNumber = averageCheckAmount = 0;
+	}
+	Customer(char* Firstname, char* Lastname,
+			 char* City, char* Street,
+			 int HouseNumber, int ApartmentNumber,
+			 int AccountNumber, int AverageCheckAmount)
+	{
+		firstname = Firstname;
+		lastname = Lastname;
+		city = City;
+		street = Street;
+		houseNumber = HouseNumber;
+		apartmentNumber = ApartmentNumber;
+		accountNumber = AccountNumber;
+		averageCheckAmount = AverageCheckAmount;
+	}
+
+	~Customer() {}
+
+	friend ostream& operator<<(ostream& s, Customer& value);
+};
+
+ostream& operator<<(ostream& s, Customer& value)
+{
+	s <<value.firstname<<", "<<value.lastname<<", "
+	  <<value.city<<", "<<value.street<<", "<<value.houseNumber<<", "
+	  << value.apartmentNumber<<", "<<value.accountNumber<<", "
+	  <<value.averageCheckAmount<<endl;
 	return s;
 }
 
@@ -362,33 +420,33 @@ int main()
 		delete ptr;
 	}
 
-	if (true)
-	{
-		cout << "\nmy_class Stack test\n";
-		Stack<my_class> S;
-		cout << "\ncycle\n";
-		for (int i = 3; i < 100; i += 5)
-			S.push(my_class(i));
-		cout << S;
-	}
-	if (true)
-	{
-		cout << "\nmy_class* p1 = new my_class";
-		my_class* p1 = new my_class;
-		delete p1;
-	}
-	if (true)
-	{
-		cout << "\nmy_class* p1 = new my_class()";
-		my_class* p1 = new my_class();
-		delete p1;
-	}
-	if (true)
-	{
-		cout << "\nmy_class* p1 = new my_class[]";
-		my_class* p1 = new my_class[10];
-		delete[] p1;
-	}
+	// if (true)
+	// {
+	// 	cout << "\nmy_class Stack test\n";
+	// 	Stack<my_class> S;
+	// 	cout << "\ncycle\n";
+	// 	for (int i = 3; i < 100; i += 5)
+	// 		S.push(my_class(i));
+	// 	cout << S;
+	// }
+	// if (true)
+	// {
+	// 	cout << "\nmy_class* p1 = new my_class";
+	// 	my_class* p1 = new my_class;
+	// 	delete p1;
+	// }
+	// if (true)
+	// {
+	// 	cout << "\nmy_class* p1 = new my_class()";
+	// 	my_class* p1 = new my_class();
+	// 	delete p1;
+	// }
+	// if (true)
+	// {
+	// 	cout << "\nmy_class* p1 = new my_class[]";
+	// 	my_class* p1 = new my_class[10];
+	// 	delete[] p1;
+	// }
 	char c; cin >> c;
 	return 0;
 }
