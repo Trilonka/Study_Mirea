@@ -6,14 +6,11 @@ using namespace std;
 template<class T>
 class Element
 {
-// protected:
-// 	Element* next;
-// 	Element* prev;
-// 	T info;
-public:
+protected:
 	Element* next;
 	Element* prev;
 	T info;
+public:
 	Element(T data) // constructor (data)
 	{
 		next = prev = NULL;
@@ -34,10 +31,34 @@ public:
 		info = el.info;
 	}
 
+	Element<T>* getNext() {
+		return next;
+	}
+
+	void setNext(Element* Next) {
+		next = Next;
+	}
+
+	Element<T>* getPrev() {
+		return prev;
+	}
+
+	void setPrev(Element* Prev) {
+		prev = Prev;
+	}
+
+	T getInfo() {
+		return info;
+	}
+
+	void setInfo(T Info) {
+		info = Info;
+	}
+
 	template<class T1> // friend output
 	friend ostream& operator<<(ostream& s, Element<T1>& el);
-	template <class T1>
-    friend istream& operator>>(istream& s, Element<T1>& el);
+	// template <class T1>
+    // friend istream& operator>>(istream& s, Element<T1>& el);
 };
 
 template<class T1> // realize friend output for Element
@@ -46,26 +67,24 @@ ostream& operator<<(ostream& s, Element<T1>& el)
 	s << el.info;
 	return s;
 }
-template<class T1> // realize friend output for Element
-istream& operator>>(istream& s, Element<T1>& el)
-{
-	s >> el.info;
-	return s;
-}
+// template<class T1> // realize friend output for Element
+// istream& operator>>(istream& s, Element<T1>& el)
+// {
+// 	s >> el.info;
+// 	return s;
+// }
 
 // linked_list class
 template<class T>
 class LinkedList
 {
-// protected:
-// 	Element<T>* head;
-// 	Element<T>* tail;
-// 	int count;
+protected:
 
-public:
 	Element<T>* head;
 	Element<T>* tail;
 	int count;
+
+public:
 
 	LinkedList() // constructor (void)
 	{
@@ -80,24 +99,11 @@ public:
 		head = current;
 		for (int i = 1; i<len; i++)
 		{
-			current = current->next;
+			current = current->getNext();
 			current = new Element<T>(arr[i]);
 		}
 		tail = current;
 		count = len;
-	}
-
-	T& operator[](int index) // operator [] (index)
-	{
-		if(index<0 || index>=count) throw "Incorrect index";
-
-		Element<T>* current = head;
-
-		for (int i = 0;
-			current != NULL && i < index;
-			current = current->next, i++);
-
-		return current->info;
 	}
 
 	virtual ~LinkedList() // virtual destructor
@@ -106,15 +112,19 @@ public:
 		if (head != NULL)
 		{
 			Element<T>* current = head;
-			Element<T>* temp = head->next;
-			for (; current != tail; current = temp, temp = temp->next)
+			Element<T>* temp = head->getNext();
+			for (; current != tail; current = temp, temp = temp->getNext())
 				delete current;
 		}
 		head = NULL; tail = NULL;
 	}
 
+	virtual Element<T>* operator[](int index) = 0;
+
 	virtual Element<T>* pop() = 0; // virtual pop
 	virtual Element<T>* push(T value) = 0; // virtual push (value)
+
+	virtual void filter(bool (*cmp)(T), LinkedList<T>* dest) = 0;
 
 	virtual bool isEmpty() { return (LinkedList<T>::count == 0); } // virtual isEmpty
 
@@ -125,9 +135,9 @@ public:
 template<class T1> // realize friend output for LinkedList
 ostream& operator<<(ostream& s, LinkedList<T1>& el)
 {
-	Element<T1>* current;
-	for (current = el.head; current != NULL; current = current->next)
-		s << *current << "; ";
+	Element<T1>* current; // может переопределить вывод
+	for (current = el.head; current != NULL; current = current->getNext())
+		s << *current << ", ";
 	return s;
 }
 
@@ -147,8 +157,8 @@ public:
 		}
 		else
 		{
-			LinkedList<T>::tail->next = new Element<T>(value);
-			LinkedList<T>::tail = LinkedList<T>::tail->next;
+			LinkedList<T>::tail->setNext(new Element<T>(value));
+			LinkedList<T>::tail = LinkedList<T>::tail->getNext();
 		}
 		LinkedList<T>::count++;
 		return LinkedList<T>::tail;
@@ -165,9 +175,9 @@ public:
 		{
 			Element<T>* current;
 			for (current = LinkedList<T>::head; 
-				current->next != LinkedList<T>::tail; current = current->next);
+				current->getNext() != LinkedList<T>::tail; current = current->getNext());
 			LinkedList<T>::tail = current;
-			LinkedList<T>::tail->next = NULL;
+			LinkedList<T>::tail->setNext(NULL);
 		}
 		LinkedList<T>::count--;
 		return res;
@@ -183,23 +193,59 @@ public:
 		if (predecessor == NULL)
 		{
 			Element<T>* newElem = new Element<T>(value);
-			newElem->next = LinkedList<T>::head;
+			newElem->setNext(LinkedList<T>::head);
 			LinkedList<T>::head = newElem;
 			LinkedList<T>::count++;
 			return newElem;
 		}
 		Element<T>* newElem = new Element<T>(value);
-		Element<T>* successor = predecessor->next;
-		predecessor->next = newElem;
-		newElem->next = successor;
+		Element<T>* successor = predecessor->getNext();
+		predecessor->setNext(newElem);
+		newElem->setNext(successor);
 		if (predecessor == LinkedList<T>::tail)
-			LinkedList<T>::tail = LinkedList<T>::tail->next;
+			LinkedList<T>::tail = LinkedList<T>::tail->getNext();
 		LinkedList<T>::count++;
 		return newElem;
 	}
 
+	virtual void filter(bool (*cmp)(T), LinkedList<T>* dest)
+	{
+		for (Element<T>* cur = LinkedList<T>::head; cur != NULL; cur = cur->getNext())
+	        if (cmp(cur->getInfo()))
+	            dest->push(cur->getInfo());
+	}
+
+	virtual Element<T>* operator[](int index)
+	{
+		if(index<0 || index>=LinkedList<T>::count) throw "Incorrect index";
+
+		Element<T>* current = LinkedList<T>::head;
+
+		for (int i = 0;
+			current != NULL && i < index;
+			current = current->getNext(), i++);
+
+		return current;
+	}
+
 	virtual ~Stack() { cout << "\nStack class destructor"; } // virtual destructor
+
+	template <class T1>
+    friend istream& operator>>(istream& s, Stack<T1>& el); 
 };
+
+template <class T1>
+istream& operator>>(istream& s, Stack<T1>& el)
+{
+	Element<T1>* pom = el.head;
+	T1 val;
+	for (int i = 0; i<el.count; i++) {
+		s >> val;
+		pom->setInfo(val);
+		pom = pom->getNext();
+	}
+	return s;
+}
 
 // DoubleSidedStack class
 template<class T>
@@ -209,25 +255,36 @@ public:
 	DoubleSidedStack() : Stack<T>() { cout << "\nDoubleSidedStackclass constructor"; } // constructor (void) : Stack
 	virtual ~DoubleSidedStack() { cout << "\nDoubleSidedStack class destructor"; } // virtual destructor
 
-	// Зачем перегружать оператор [] ?
-	// T& operator[](int index) // operator [] (index)
-	// {
-	// 	if(index<0 || index>=count) throw "Incorrect index";
+	//Зачем перегружать оператор []? Ответ: Можно смотреть к чему ближе
+	Element<T>* operator[](int index) // operator [] (index)
+	{
+		if(index<0 || index>=LinkedList<T>::count) throw "Incorrect index";
 
-	// 	Element<T>* current = head;
+		if (index < LinkedList<T>::count/2)
+		{
+			Element<T>* current = LinkedList<T>::head;
+			for (int i = 0;
+			current != NULL && i < index;
+			current = current->getNext(), i++);
+			return current;
+		}
+		else
+		{
+			Element<T>* current = LinkedList<T>::tail;
+			for (int i = LinkedList<T>::count;
+			current != NULL && i>index;
+			current = current->getPrev(), i--)
+			return current;
+		}
 
-	// 	for (int i = 0;
-	// 		current != NULL && i < index;
-	// 		current = current->next, i++);
-
-	// 	return current->info;
-	// }
+		return NULL;
+	}
 
 	virtual Element<T>* push(T value) // virtual push (value) - changed
 	{
 		Element<T>* tail_predecessor_push = LinkedList<T>::tail;
 		Element<T>* res = Stack<T>::push(value);
-		res->prev = tail_predecessor_push;
+		res->setPrev(tail_predecessor_push);
 		return res;
 	}
 
@@ -236,9 +293,9 @@ public:
 		if (LinkedList<T>::tail == LinkedList<T>::head)
 			return Stack<T>::pop();
 		Element<T>* res = LinkedList<T>::tail;
-		LinkedList<T>::tail = LinkedList<T>::tail->prev;
-		LinkedList<T>::tail->next = NULL;
-		res->prev = NULL;
+		LinkedList<T>::tail = LinkedList<T>::tail->getPrev();
+		LinkedList<T>::tail->setNext(NULL);
+		res->setPrev(NULL);
 		LinkedList<T>::count--;
 		return res;
 	}
@@ -253,13 +310,13 @@ public:
 		if (predecessor == NULL)
 		{
 			Stack<T>::insert(value);
-			LinkedList<T>::head->next->prev = LinkedList<T>::head;
+			LinkedList<T>::head->getNext()->setPrev(LinkedList<T>::head);
 			return LinkedList<T>::head;
 		}
-		Element<T>* successor = predecessor->next;
+		Element<T>* successor = predecessor->getNext();
 		Element<T>* inserted = Stack<T>::insert(value, predecessor);
-		if(predecessor != LinkedList<T>::tail) successor->prev = inserted;
-		inserted->prev = predecessor;
+		if(predecessor != LinkedList<T>::tail) successor->setPrev(inserted);
+		inserted->setPrev(predecessor);
 		return inserted;
 	}
 
@@ -271,7 +328,7 @@ template<class T1>
 ostream& operator<<(ostream& s, DoubleSidedStack<T1>& el)
 {
 	Element<T1>* current;
-	for (current = el.tail; current != NULL; current = current->prev)
+	for (current = el.tail; current != NULL; current = current->getPrev())
 		s << *current << ", ";
 	return s;
 }
@@ -304,7 +361,7 @@ class my_class : protected DoubleSidedStack<T>
 
 };
 
-// Customer class
+// Customer class	
 class Customer
 {
 public:
@@ -356,97 +413,16 @@ ostream& operator<<(ostream& s, Customer& value)
 
 int main()
 {
-	if (true)
+	DoubleSidedStack<int> s;
+	for (int i = 0; i<5; i++)
 	{
-		DoubleSidedStack<double> S;
-		cout << "\n";
-		for (int i = 0; i < 20; i++)
-		{
-			S.push(i);
-		}
-		//S.insert(-1);
-		S.insert(5.5, S.head->next->next->next->next->next);
-		cout <<"\n"<< S;
-		cout << "\n";
+		s.push(i);
 	}
-	if (true)
-	{
-		Stack<double> S;
-		for (int i = 0; i < 10; i++)
-			S.push(i);
-		S.insert(3.5, S.head->next->next->next);
-		cout << S;
-		cout << "\n";
-	}
-	if (true)
-	{
-		cout << "Only object\n";
-		Stack<int> S;
-		for (int i = 0; i < 100; i += 5)
-			S.push(i);
-		for (; !S.isEmpty(); cout << S.pop()->info << ", ");
-		cout << "\n";
-	}
-
-	if (true)
-	{
-		cout << "\nBase pointer 1\n";
-		LinkedList<int>* ptr = new DoubleSidedStack<int>;
-		for (int i = 1; i < 100; i += 5)
-			ptr->push(i);
-		cout << *ptr << "\n";
-		delete ptr;
-		//добавить виртуальные деструкторы
-	}
-
-	if (true)
-	{
-		cout << "\nBase pointer 2\n";
-		LinkedList<int>* ptr; Stack<int>* ptr2 = new Stack<int>; ptr = ptr2;
-		for (int i = 1; i < 100; i += 5)
-			ptr->push(i);
-		cout << *ptr << "\n";
-		delete ptr;
-		//добавить виртуальные деструкторы
-	}
-
-	if (true)
-	{
-		cout << "\nStack pointer\n";
-		Stack<int>* ptr = new Stack<int>;
-		for (int i = 2; i < 100; i += 5)
-			ptr->push(i);
-		cout << *ptr << "\n";
-		delete ptr;
-	}
-
-	// if (true)
-	// {
-	// 	cout << "\nmy_class Stack test\n";
-	// 	Stack<my_class> S;
-	// 	cout << "\ncycle\n";
-	// 	for (int i = 3; i < 100; i += 5)
-	// 		S.push(my_class(i));
-	// 	cout << S;
-	// }
-	// if (true)
-	// {
-	// 	cout << "\nmy_class* p1 = new my_class";
-	// 	my_class* p1 = new my_class;
-	// 	delete p1;
-	// }
-	// if (true)
-	// {
-	// 	cout << "\nmy_class* p1 = new my_class()";
-	// 	my_class* p1 = new my_class();
-	// 	delete p1;
-	// }
-	// if (true)
-	// {
-	// 	cout << "\nmy_class* p1 = new my_class[]";
-	// 	my_class* p1 = new my_class[10];
-	// 	delete[] p1;
-	// }
-	char c; cin >> c;
+	cout << s;
+	s.pop();
+	cout << s << endl;
+	Element<int> el = *s[3];
+	cout << el;
+	//---
 	return 0;
 }
