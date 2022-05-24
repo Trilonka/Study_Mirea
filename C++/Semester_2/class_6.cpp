@@ -7,9 +7,11 @@ template<class T>
 class Element
 {
 protected:
+
 	Element* next;
 	Element* prev;
 	T info;
+
 public:
 	Element(T data) // constructor (data)
 	{
@@ -208,13 +210,6 @@ public:
 		return newElem;
 	}
 
-	virtual void filter(bool (*cmp)(T), LinkedList<T>* dest)
-	{
-		for (Element<T>* cur = LinkedList<T>::head; cur != NULL; cur = cur->getNext())
-	        if (cmp(cur->getInfo()))
-	            dest->push(cur->getInfo());
-	}
-
 	virtual Element<T>* operator[](int index)
 	{
 		if(index<0 || index>=LinkedList<T>::count) throw "Incorrect index";
@@ -320,6 +315,38 @@ public:
 		return inserted;
 	}
 
+	virtual void filter(bool (*cmp)(T), LinkedList<T>* dest)
+	{
+		for (Element<T>* cur = LinkedList<T>::head; cur != NULL; cur = cur->getNext())
+	        if (cmp(cur->getInfo()))
+	            dest->push(cur->getInfo());
+	}
+
+	virtual void filter_recursion(bool (*cmp)(T), DoubleSidedStack<T>* dest, Element<T>* el)
+	{
+		if (el==NULL) return;
+		if (cmp(el->getInfo()))
+			dest->push(el->getInfo());
+		return filter_recursion(cmp, dest, el->getNext());
+	}
+
+	// Поиск элемента по значению
+    virtual Element<T>* find(T value)
+    {
+        Element<T>* p = LinkedList<T>::head;
+        for (; p->getInfo() != value && p != NULL; p = p->getNext());
+        return p;
+	}
+
+	virtual Element<T>* find_recursion(T value, Element<T>* el)
+	{
+		if (el->getInfo() == value || el==NULL)
+		{
+			return el;
+		}
+		return find_recursion(value, el->getNext());
+	}
+
 	template<class T1>
 	friend ostream& operator<<(ostream& s, DoubleSidedStack<T1>& el);
 };
@@ -335,28 +362,42 @@ ostream& operator<<(ostream& s, DoubleSidedStack<T1>& el)
 
 // my_class class
 template <class T>
-class my_class : protected DoubleSidedStack<T>
+class my_class : public DoubleSidedStack<T>
 {
 	my_class() : DoubleSidedStack<T>() { } // constructor (void) : my_class
 	virtual ~my_class() { } // virtual destructor
 
-	virtual Element<T>* push(T value) // virtual push (value) - changed
+	virtual Element<T>* push(Customer value) // virtual push (value) - changed
 	{
-		Element<T>* pom = new Element<T>(value);
-		pom->next = DoubleSidedStack<T>::head;
-		DoubleSidedStack<T>::head->prev = pom;
-		DoubleSidedStack<T>::head = pom;
-		DoubleSidedStack<T>::count++;
+		Element<Customer>* pom = new Element<Customer>(value);
+		pom->setNext(DoubleSidedStack<Customer>::head);
+		DoubleSidedStack<Customer>::head->setPrev(pom);
+		DoubleSidedStack<Customer>::head = pom;
+		DoubleSidedStack<Customer>::count++;
 		return pom;
 	}
 
-	virtual Element<T>* pop() // virtual pop (void) - changed
+	virtual Element<Customer>* pop() // virtual pop (void) - changed
 	{
-		Element<T>* pom = DoubleSidedStack<T>::head;
-		pom->next->prev = NULL;
-		pom->next = NULL;
-		DoubleSidedStack<T>::count--;
+		Element<Customer>* pom = DoubleSidedStack<Customer>::head;
+		pom->getNext()->setPrev(NULL);
+		pom->setNext(NULL);
+		DoubleSidedStack<Customer>::count--;
 		return pom;
+	}
+
+	virtual Element<Customer>* find(Customer value)
+    {
+        Element<Customer>* p = LinkedList<Customer>::head;
+        for (; p->getInfo().lastname != value.lastname && p != NULL; p = p->getNext());
+        return p;
+	}
+
+	virtual void filter(int AverageCheckAmount, LinkedList<Customer>* dest)
+	{
+		for (Element<Customer>* cur = LinkedList<Customer>::head; cur != NULL; cur = cur->getNext())
+	        if (cur->getInfo().averageCheckAmount == AverageCheckAmount)
+	            dest->push(cur->getInfo());
 	}
 
 };
@@ -424,5 +465,15 @@ int main()
 	Element<int> el = *s[3];
 	cout << el;
 	//---
+	Customer c1("sanya", "anna", "volk", "street", 3, 4, 2, 3);
+	Customer c2("dsfa", "anna", "volk", "street", 3, 4, 2, 4);
+	Customer c3("sdsafda", "kolya", "volk", "street", 3, 4, 2, 14);
+	Customer c4("sgvfsaa", "ton", "volk", "street", 3, 4, 2, 40);
+
+	my_class<Customer> m;
+	m.push(c1);
+	m.push(c2);
 	return 0;
+
+	LinkedList<double>* p = new 
 }

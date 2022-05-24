@@ -1,12 +1,8 @@
 #include <iostream>
-#include <typeinfo>
 #include <fstream>
 #include <cstring>
-#include <cstdlib>
 #include <string>
-#include <vector>
-#include <ctime>
-#include <cmath>
+
 
 using namespace std;
 
@@ -145,6 +141,70 @@ public:
 	void print()
 	{
 		cout << "IndexOutOfBounds: " << str << what();
+	}
+
+};
+
+class TooLargeIndex : public IndexOutOfBounds
+{
+protected:
+	int r_i; int c_i;
+public:
+    TooLargeIndex() : IndexOutOfBounds() {}
+
+    TooLargeIndex(const char* s, int R_i, int C_i) : IndexOutOfBounds(s, R_i, C_i)
+	{
+		r_i = R_i;
+        c_i = C_i;
+	}
+
+	TooLargeIndex(char* s, int R_i, int C_i) : IndexOutOfBounds(s, R_i, C_i)
+	{
+		r_i = R_i;
+        c_i = C_i;
+	}
+	
+	TooLargeIndex(const TooLargeIndex& e)
+	{
+		str = new char[strlen(e.str) + 1];
+		strcpy(str, e.str);
+	}
+
+	void print()
+	{
+		cout << "TooLargeIndex: " << str << what();
+	}
+
+};
+
+class NegativeIndex : public IndexOutOfBounds
+{
+protected:
+	int r_i; int c_i;
+public:
+    NegativeIndex() : IndexOutOfBounds() {}
+
+    NegativeIndex(const char* s, int R_i, int C_i) : IndexOutOfBounds(s, R_i, C_i)
+	{
+		r_i = R_i;
+        c_i = C_i;
+	}
+
+	NegativeIndex(char* s, int R_i, int C_i) : IndexOutOfBounds(s, R_i, C_i)
+	{
+		r_i = R_i;
+        c_i = C_i;
+	}
+	
+	NegativeIndex(const NegativeIndex& e)
+	{
+		str = new char[strlen(e.str) + 1];
+		strcpy(str, e.str);
+	}
+
+	void print()
+	{
+		cout << "NegativeIndex: " << str << what();
 	}
 
 };

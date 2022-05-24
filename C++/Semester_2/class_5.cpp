@@ -62,18 +62,26 @@ public:
 
     T* operator[](int index)
     {
-        if (index < 0 || index >= height)
+        if (index < 0)
         {
-            throw IndexOutOfBounds("Wrong index in operator[] ", index, -1);
+            throw NegativeIndex("Negative index in operator[] ", index, -1);
+        }
+        if (index >= height)
+        {
+            throw TooLargeIndex("Too large index in operator[] ", index, -1);
         }
         return ptr[index];
     }
 
     T& operator()(int row, int column)
     {
-        if (row < 0 || column < 0 || row >= height || column >= width)
+        if (row < 0 || column < 0)
         {
-            throw IndexOutOfBounds("Wrong index in operator() ", row, column);
+            throw NegativeIndex("Negative index in operator() ", row, column);
+        }
+        if (row >= height || column >= width)
+        {
+            throw TooLargeIndex("Too large index in operator() ", row, column);
         }
         return ptr[row][column];
     }
@@ -147,8 +155,21 @@ ostream& operator<<(ostream& ustream, BaseMatrix<T1>& obj)
 template <class T1>
 istream& operator>>(istream& ustream, BaseMatrix<T1>& obj)
 {
+    int height = -1, width = -1;
     if (typeid(ustream) == typeid(ifstream))
-        ustream >> obj.height >> obj.width;
+        ustream >> height >> width;
+
+    if (height>=0 && width>=0 && height!=obj.height && obj.width!=width)
+    {
+        for (int i = 0; i < obj.height; i++)
+                delete[] obj.ptr[i];
+            delete[] obj.ptr;
+            obj.height = height;
+            obj.width = width;
+            obj.ptr = new T1* [height];
+            for (int i = 0; i < height; i++)
+                obj.ptr[i] = new T1[width];
+    }
 
     for (int i = 0; i < obj.height; i++)
         for (int j = 0; j < obj.width; j++)
@@ -160,8 +181,8 @@ istream& operator>>(istream& ustream, BaseMatrix<T1>& obj)
 ostream& my_manip(ostream& s)
 {
     s.precision(4);
-    s.fill('%');
-    s.width(10);
+    //s.fill('%');
+    //s.width(10);
     return s;
 }
 
@@ -205,50 +226,38 @@ public:
         }
     }
 
-    void pascal_romb(int size = 3) // функция, указанная в варианте
+    Matrix<T> pascal_romb(int size = 3) // функция, указанная в варианте
     {
         if (size < 1)
             throw WrongPascalDimension("Wrong pascal triangle size ", size);
-        if (BaseMatrix<T>::ptr != NULL)
-        {
-            for (int i = 0; i < BaseMatrix<T>::height; i++)
-                delete[] BaseMatrix<T>::ptr[i];
-            delete[] BaseMatrix<T>::ptr;
-            BaseMatrix<T>::ptr = NULL;
-        }
-        BaseMatrix<T>::height = size*2-1;
-        BaseMatrix<T>::width = size;
-        BaseMatrix<T>::ptr = new T* [BaseMatrix<T>::height];
-        BaseMatrix<T>::ptr[0] = new T[BaseMatrix<T>::width];
+        Matrix<T> pom(size*2-1, size);
         int k = 1;
-
-        for (int i = 0; i < BaseMatrix<T>::height/2+1; i++)
+        for (int i = 0; i < pom.height/2+1; i++)
         {
-            BaseMatrix<T>::ptr[i] = new T[BaseMatrix<T>::width];
-            BaseMatrix<T>::ptr[i][0] = 1;
-            for (int j = 1; j < BaseMatrix<T>::width; j++)
+            pom.ptr[i][0] = 1;
+            for (int j = 1; j < pom.width; j++)
             {
                 if (j < k)
-                    BaseMatrix<T>::ptr[i][j] = BaseMatrix<T>::ptr[i-1][j-1] + BaseMatrix<T>::ptr[i-1][j];
+                    pom.ptr[i][j] = pom.ptr[i-1][j-1] + pom.ptr[i-1][j];
                 else 
-                    BaseMatrix<T>::ptr[i][j] = 0;
+                    pom.ptr[i][j] = 0;
             }
             k++;
         }
         k = 1;
-        for (int i = BaseMatrix<T>::height-1; i > BaseMatrix<T>::height/2; i--)
+        for (int i = pom.height-1; i > pom.height/2; i--)
         {
-            BaseMatrix<T>::ptr[i] = new T[BaseMatrix<T>::width];
-            BaseMatrix<T>::ptr[i][0] = 1;
-            for (int j = 1; j < BaseMatrix<T>::width; j++)
+            pom.ptr[i][0] = 1;
+            for (int j = 1; j < pom.width; j++)
             {
                 if (j < k)
-                    BaseMatrix<T>::ptr[i][j] = BaseMatrix<T>::ptr[i+1][j-1] + BaseMatrix<T>::ptr[i+1][j];
+                    pom.ptr[i][j] = pom.ptr[i+1][j-1] + pom.ptr[i+1][j];
                 else 
-                    BaseMatrix<T>::ptr[i][j] = 0;
+                    pom.ptr[i][j] = 0;
             }
             k++;
         }
+        return pom;
     }
 };
 
@@ -257,12 +266,13 @@ int main()
 {
     try
     {
+        my_manip(cout);
         BaseMatrix<double> BM1(5,7), BM2(5,7), BM3(3,3);
         for (int i = 0; i<5; i++)
         {
             for (int j = 0; j<7; j++)
             {
-                BM1[i][j] = i*j-0.7;
+                BM1[i][j] = i*j-0.7422321;
                 BM2[i][j] = 2*i - j + 1.55;
             }
         }
@@ -274,8 +284,8 @@ int main()
         M.generateRandMatrix();
         cout << M << endl;
         
-        M.pascal_romb(6);
-        M.print();
+        BaseMatrix<double> K = M.pascal_romb(6);
+        K.print();
         cout << endl;
 
         // работа с файлом
