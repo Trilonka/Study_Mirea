@@ -428,7 +428,7 @@ class my_class : public DoubleSidedStack<Customer>
 		return pom;
 	}
 
-	virtual Element<Customer>* pop() // virtual pop (void) - changed
+	virtual Element<Customer>* pop()
 	{
 		Element<Customer>* pom = DoubleSidedStack<Customer>::head;
 		pom->getNext()->setPrev(NULL);
