@@ -376,7 +376,7 @@ public:
 		}
 		Element<T>* successor = predecessor->getNext();
 		Element<T>* inserted = Stack<T>::insert(value, predecessor);
-		if(successor != NULL) successor->setPrev(inserted); // возможно тут надо if(successor != NULL) или inserted != LinkedList<T>::tail
+		if(successor != NULL) successor->setPrev(inserted);
 		inserted->setPrev(predecessor);
 		return inserted;
 	}
