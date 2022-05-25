@@ -1,5 +1,5 @@
 .DS_Store
 LICENSE
 .vscode
-pom.exe
+*.exe
 *.txt
