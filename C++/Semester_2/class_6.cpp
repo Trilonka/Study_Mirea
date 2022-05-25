@@ -1,8 +1,9 @@
-using namespace std;
+#include "Exception.cpp"
 
-#include <iostream>
+// Methods: pop, push, [], insert, remove, find, filter.
 
-// element class
+// ------------------------------------------------------------------------------------------------------------- ELEMENT (100%) -----------------------------------------------------------------------------------------------------------------
+
 template<class T>
 class Element
 {
@@ -13,20 +14,20 @@ protected:
 	T info;
 
 public:
-	Element(T data) // constructor (data)
+	Element(T data)
 	{
 		next = prev = NULL;
 		info = data;
 	}
 
-	Element(Element* Next, Element* Prev, T data) // constructor (next, prev, data)
+	Element(Element* Next, Element* Prev, T data)
 	{
 		next = Next;
 		prev = Prev;
 		info = data;
 	}
 
-	Element(const Element& el) // copy constructor
+	Element(const Element& el)
 	{
 		next = el.next;
 		prev = el.prev;
@@ -57,26 +58,19 @@ public:
 		info = Info;
 	}
 
-	template<class T1> // friend output
+	template<class T1>
 	friend ostream& operator<<(ostream& s, Element<T1>& el);
-	// template <class T1>
-    // friend istream& operator>>(istream& s, Element<T1>& el);
 };
 
-template<class T1> // realize friend output for Element
+template<class T1>
 ostream& operator<<(ostream& s, Element<T1>& el)
 {
 	s << el.info;
 	return s;
 }
-// template<class T1> // realize friend output for Element
-// istream& operator>>(istream& s, Element<T1>& el)
-// {
-// 	s >> el.info;
-// 	return s;
-// }
 
-// linked_list class
+// ------------------------------------------------------------------------------------------------------------- ELEMENT (100%) / LINKED LIST (add exceptions, <<)  -----------------------------------------------------------------------------------------------------------------
+
 template<class T>
 class LinkedList
 {
@@ -88,15 +82,15 @@ protected:
 
 public:
 
-	LinkedList() // constructor (void)
+	LinkedList()
 	{
 		head = tail = NULL;
 		count = 0;
 	}
 
-	LinkedList(T* arr, int len) // constructor (arr, len)
+	LinkedList(T* arr, int len)
 	{
-		if (len < 1) throw "Incorrect array size";
+		if (len < 1) throw "Incorrect array size"; // Negative Array length
 		Element<T>* current = new Element<T>(arr[0]);
 		head = current;
 		for (int i = 1; i<len; i++)
@@ -108,7 +102,7 @@ public:
 		count = len;
 	}
 
-	virtual ~LinkedList() // virtual destructor
+	virtual ~LinkedList()
 	{
 		cout << "\nLinkedList class destructor";
 		if (head != NULL)
@@ -122,35 +116,61 @@ public:
 	}
 
 	virtual Element<T>* operator[](int index) = 0;
-
-	virtual Element<T>* pop() = 0; // virtual pop
-	virtual Element<T>* push(T value) = 0; // virtual push (value)
-
+	virtual Element<T>* push(T value) = 0;
+	virtual Element<T>* pop() = 0;
+	virtual Element<T>* insert(T value, Element<T>* predecessor=NULL) = 0;
+	virtual Element<T>* find(T value) = 0;
+	virtual Element<T>* find(T value, Element<T>* el) = 0;
+	virtual Element<T>* remove(T value) = 0;
 	virtual void filter(bool (*cmp)(T), LinkedList<T>* dest) = 0;
 
-	virtual bool isEmpty() { return (LinkedList<T>::count == 0); } // virtual isEmpty
+	bool isEmpty() { return (LinkedList<T>::count == 0); }
 
-	template<class T1> // friend output
+	template<class T1>
 	friend ostream& operator<<(ostream& s, LinkedList<T1>& el);
 };
 
-template<class T1> // realize friend output for LinkedList
+template<class T1> 
 ostream& operator<<(ostream& s, LinkedList<T1>& el)
 {
-	Element<T1>* current; // может переопределить вывод
-	for (current = el.head; current != NULL; current = current->getNext())
+	Element<T1>* current;
+	s << "\n(";
+	for (current = el.head; current->getNext() != NULL; current = current->getNext())
 		s << *current << ", ";
+	s << *current << ")";
 	return s;
 }
 
-// Stack class
+// ------------------------------------------------------------------------------------------------------------- LINKED LIST (add exceptions) / STACK (add exceptions) -----------------------------------------------------------------------------------------------------------------
+
 template<class T> 
 class Stack : public LinkedList<T>
 {
 public:
-	Stack<T>() : LinkedList<T>() {} // constructor (void) : LinkedList (void)
+	Stack<T>() : LinkedList<T>() 
+	{
+		cout << "\nStack class constructor";
+	}
 
-	virtual Element<T>* push(T value) // LinkedList push (value) realize
+	virtual ~Stack()
+	{
+		cout << "\nStack class destructor";
+	}
+
+	virtual Element<T>* operator[](int index)
+	{
+		if(index<0 || index>=LinkedList<T>::count) throw "Incorrect index"; // Negative / Too large index
+
+		Element<T>* current = LinkedList<T>::head;
+
+		for (int i = 0;
+			current != NULL && i < index;
+			current = current->getNext(), i++);
+
+		return current;
+	}
+
+	virtual Element<T>* push(T value)
 	{
 		if (LinkedList<T>::head == NULL)
 		{
@@ -166,7 +186,7 @@ public:
 		return LinkedList<T>::tail;
 	}
 
-	virtual Element<T>* pop() // LinkedList pop realize
+	virtual Element<T>* pop()
 	{
 		if (LinkedList<T>::tail == NULL)
 			return NULL;
@@ -185,11 +205,11 @@ public:
 		return res;
 	}
 
-	virtual Element<T>* insert(T value, Element<T>* predecessor=NULL) // virtual insert (value, predecessor)
+	virtual Element<T>* insert(T value, Element<T>* predecessor=NULL)
 	{
 		if (LinkedList<T>::head == NULL)
 		{
-			if (predecessor != NULL) throw "Predecessor not exists";
+			if (predecessor != NULL) throw "Predecessor not exists"; // Stack element not exists
 			return push(value);
 		}
 		if (predecessor == NULL)
@@ -210,20 +230,40 @@ public:
 		return newElem;
 	}
 
-	virtual Element<T>* operator[](int index)
-	{
-		if(index<0 || index>=LinkedList<T>::count) throw "Incorrect index";
-
-		Element<T>* current = LinkedList<T>::head;
-
-		for (int i = 0;
-			current != NULL && i < index;
-			current = current->getNext(), i++);
-
-		return current;
+	virtual Element<T>* find(T value)
+    {
+        Element<T>* p = LinkedList<T>::head;
+        for (; p->getInfo() != value && p != NULL; p = p->getNext());
+        return p;
 	}
 
-	virtual ~Stack() { cout << "\nStack class destructor"; } // virtual destructor
+	virtual Element<T>* find(T value, Element<T>* el)
+	{
+		if (el->getInfo() == value || el==NULL)
+			return el;
+		return find(value, el->getNext());
+	}
+
+	virtual Element<T>* remove(T value)
+	{
+		Element<T>* p = LinkedList<T>::head;
+		if (p == NULL || p->getInfo() == value) return p;
+        for (; p->getNext() != NULL &&  p->getNext()->getInfo() != value; p = p->getNext());
+		if (p->getNext()->getInfo() == value)
+		{
+			Element<T>* res = p->getNext();
+			p->setNext(res->getNext());
+        	return res;
+		}
+		return NULL;
+	}
+
+	virtual void filter(bool (*cmp)(T), LinkedList<T>* dest)
+	{
+		for (Element<T>* cur = LinkedList<T>::head; cur != NULL; cur = cur->getNext())
+	        if (cmp(cur->getInfo()))
+	            dest->push(cur->getInfo());
+	}
 
 	template <class T1>
     friend istream& operator>>(istream& s, Stack<T1>& el); 
@@ -232,15 +272,17 @@ public:
 template <class T1>
 istream& operator>>(istream& s, Stack<T1>& el)
 {
+	cout << "Stack size is: " << el.count << ". Enter " << el.count << " values." << endl;
 	Element<T1>* pom = el.head;
 	T1 val;
-	for (int i = 0; i<el.count; i++) {
+	for (int i = 0; i<el.count; i++, pom->setInfo(val), pom = pom->getNext())
+	{
 		s >> val;
-		pom->setInfo(val);
-		pom = pom->getNext();
 	}
 	return s;
 }
+
+// ------------------------------------------------------------------------------------------------------------- STACK / DOUBLE SIDED STACK -----------------------------------------------------------------------------------------------------------------
 
 // DoubleSidedStack class
 template<class T>
@@ -360,14 +402,16 @@ ostream& operator<<(ostream& s, DoubleSidedStack<T1>& el)
 	return s;
 }
 
+// ------------------------------------------------------------------------------------------------------------- DOUBLE SIDED STACK / MY CLASS -----------------------------------------------------------------------------------------------------------------
+
 // my_class class
-template <class T>
-class my_class : public DoubleSidedStack<T>
+template <class Customer>
+class my_class : public DoubleSidedStack<Customer>
 {
-	my_class() : DoubleSidedStack<T>() { } // constructor (void) : my_class
+	my_class() : DoubleSidedStack<Customer>() { } // constructor (void) : my_class
 	virtual ~my_class() { } // virtual destructor
 
-	virtual Element<T>* push(Customer value) // virtual push (value) - changed
+	virtual Element<Customer>* push(Customer value) // virtual push (value) - changed
 	{
 		Element<Customer>* pom = new Element<Customer>(value);
 		pom->setNext(DoubleSidedStack<Customer>::head);
@@ -401,6 +445,8 @@ class my_class : public DoubleSidedStack<T>
 	}
 
 };
+
+// ------------------------------------------------------------------------------------------------------------- MY CLASS / CUSTOMER -----------------------------------------------------------------------------------------------------------------
 
 // Customer class	
 class Customer
@@ -452,28 +498,44 @@ ostream& operator<<(ostream& s, Customer& value)
 	return s;
 }
 
+// ------------------------------------------------------------------------------------------------------------- CUSTOMER / MAIN -----------------------------------------------------------------------------------------------------------------
+
+bool f(double d)
+{
+	return d>10;
+}
+
 int main()
 {
-	DoubleSidedStack<int> s;
-	for (int i = 0; i<5; i++)
+	cout << "---------------------------------------------------------------------------PROGRAM START------------------------------------------------------------------------------------------";
+	Stack<double> stack1;
+	Stack<double> stack2;
+	for (int i = 0; i<10; i++)
 	{
-		s.push(i);
+		stack1.push(i*2);
+		stack2.push(i*2+1);
 	}
-	cout << s;
-	s.pop();
-	cout << s << endl;
-	Element<int> el = *s[3];
-	cout << el;
-	//---
-	Customer c1("sanya", "anna", "volk", "street", 3, 4, 2, 3);
-	Customer c2("dsfa", "anna", "volk", "street", 3, 4, 2, 4);
-	Customer c3("sdsafda", "kolya", "volk", "street", 3, 4, 2, 14);
-	Customer c4("sgvfsaa", "ton", "volk", "street", 3, 4, 2, 40);
 
-	my_class<Customer> m;
-	m.push(c1);
-	m.push(c2);
+	LinkedList<double>* list = &stack1;
+	cout << endl << *list->operator[](4);
+	cout << endl << *list->pop();
+	Element<double>* el = list->find(4);
+	cout << endl << *el;
+	cout << endl << *list->find(16, el);
+
+	list = &stack2;
+	cout << *list;
+	list->insert(77, list->find(9));
+	cout << *list;
+	list->remove(9);
+	cout << *list;
+
+	LinkedList<double>* filteredList = new Stack<double>();
+
+	list->filter(f, filteredList);
+	cout << *filteredList;
+
+	delete filteredList;
+	
 	return 0;
-
-	LinkedList<double>* p = new 
 }
