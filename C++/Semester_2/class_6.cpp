@@ -413,12 +413,15 @@ public:
 // ------------------------------------------------------------------------------------------------------------- DOUBLE SIDED STACK (add exceptions) / MY CLASS -----------------------------------------------------------------------------------------------------------------
 
 template <class Customer>
-class my_class : public DoubleSidedStack<Customer>
+class CustomStack : public DoubleSidedStack<Customer>
 {
-	my_class() : DoubleSidedStack<Customer>() { } // constructor (void) : my_class
-	virtual ~my_class() { } // virtual destructor
+public:
+	CustomStack() : DoubleSidedStack<Customer>() { }
+	virtual ~CustomStack() { }
 
-	virtual Element<Customer>* push(Customer value) // virtual push (value) - changed
+	// DoubleSidedStack operator[]
+
+	virtual Element<Customer>* push(Customer value)
 	{
 		Element<Customer>* pom = new Element<Customer>(value);
 		pom->setNext(DoubleSidedStack<Customer>::head);
@@ -437,6 +440,8 @@ class my_class : public DoubleSidedStack<Customer>
 		return pom;
 	}
 
+	// DoubleSidedStack insert
+
 	virtual Element<Customer>* find(Customer value)
     {
         Element<Customer>* p = LinkedList<Customer>::head;
@@ -444,18 +449,33 @@ class my_class : public DoubleSidedStack<Customer>
         return p;
 	}
 
-	virtual void filter(int AverageCheckAmount, LinkedList<Customer>* dest)
+	virtual Element<Customer>* find(Customer value, Element<Customer>* el)
+	{
+		if (el->getInfo().lastname == value.lastname || el==NULL)
+			return el;
+		return find(value, el->getNext());
+	}
+
+	// DoubleSidedStack remove
+
+	virtual void filter(bool (*cmp)(Customer), LinkedList<Customer>* dest)
 	{
 		for (Element<Customer>* cur = LinkedList<Customer>::head; cur != NULL; cur = cur->getNext())
-	        if (cur->getInfo().averageCheckAmount == AverageCheckAmount)
+	        if (cmp(cur->getInfo()))
 	            dest->push(cur->getInfo());
 	}
 
+	virtual void filter(bool (*cmp)(Customer), LinkedList<Customer>* dest, Element<Customer>* cur)
+	{
+		if (cur==NULL) return;
+		if (cmp(cur->getInfo()))
+			dest->push(cur->getInfo());
+		return filter(cmp, dest, cur->getNext());
+	}
 };
 
 // ------------------------------------------------------------------------------------------------------------- MY CLASS / CUSTOMER -----------------------------------------------------------------------------------------------------------------
 
-// Customer class	
 class Customer
 {
 public:
@@ -467,15 +487,14 @@ public:
 	int apartmentNumber;
 	int accountNumber;
 	int averageCheckAmount;
-	// push - в начало 
-	// pop - из начала
-	// Поиск по фамилии, фильтр по средней сумме чека. (search, filter)
+
 	Customer()
 	{
 		firstname = lastname = city = street = NULL;
 		houseNumber = apartmentNumber =
 		accountNumber = averageCheckAmount = 0;
 	}
+
 	Customer(char* Firstname, char* Lastname,
 			 char* City, char* Street,
 			 int HouseNumber, int ApartmentNumber,
@@ -491,17 +510,17 @@ public:
 		averageCheckAmount = AverageCheckAmount;
 	}
 
-	~Customer() {}
+	~Customer() { }
 
 	friend ostream& operator<<(ostream& s, Customer& value);
 };
 
 ostream& operator<<(ostream& s, Customer& value)
 {
-	s <<value.firstname<<", "<<value.lastname<<", "
+	s <<"\n("<<value.firstname<<", "<<value.lastname<<", "
 	  <<value.city<<", "<<value.street<<", "<<value.houseNumber<<", "
 	  << value.apartmentNumber<<", "<<value.accountNumber<<", "
-	  <<value.averageCheckAmount<<endl;
+	  <<value.averageCheckAmount<<")";
 	return s;
 }
 
@@ -581,6 +600,17 @@ int main()
 	delete filteredList;
 
 	cout << "\n---------------------------------------------------------------------------MY ClASS WORK------------------------------------------------------------------------------------------";
+	LinkedList<Customer>* custom = new CustomStack<Customer>();
+	Customer c1("Stepan", "Aniskov", "Moscow", "Taganskaya", 123, 13, 1, 150);
+	Customer c2("Ivan", "Ivanov", "Moscow", "Proletarskaya", 56, 140, 2, 750);
+	Customer c3("Anton", "Dudetski", "Kalach", "Leninskaya", 3, 1, 4, 370);
+	Customer c4("Igor", "Ivanov", "Jeneva", "Kloshevskaya", 40, 32, 5, 2720);
+	Customer customers[] = {c1, c2, c3, c4};
+
+	for (int i = 0; i<4; i++)
+		custom->push(customers[i]);
+	cout << *custom;
+	
 
 	return 0;
 }
