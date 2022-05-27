@@ -69,7 +69,7 @@ ostream& operator<<(ostream& s, Element<T1>& el)
 	return s;
 }
 
-// ------------------------------------------------------------------------------------------------------------- ELEMENT (100%) / LINKED LIST (add exceptions, <<)  -----------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------- ELEMENT (100%) / LINKED LIST (add exceptions, change filter (watch Custom Stack filter))  -----------------------------------------------------------------------------------------------------------------
 
 template<class T>
 class LinkedList
@@ -160,7 +160,7 @@ istream& operator>>(istream& s, LinkedList<T1>& el)
 	return s;
 }
 
-// ------------------------------------------------------------------------------------------------------------- LINKED LIST (add exceptions) / STACK (add exceptions) -----------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------- LINKED LIST (add exceptions, change filter (watch Custom Stack filter)) / STACK (add exceptions) -----------------------------------------------------------------------------------------------------------------
 
 template<class T> 
 class Stack : public LinkedList<T>
@@ -391,6 +391,8 @@ public:
 		{
 			Stack<T>::remove(value);
 			LinkedList<T>::head->setPrev(NULL);
+			if (LinkedList<T>::count == 1)
+				LinkedList<T>::tail->setPrev(NULL);
 			return p;
 		}
         for (; p->getNext() != NULL &&  p->getNext()->getInfo() != value; p = p->getNext());
@@ -398,7 +400,8 @@ public:
 		{
 			Element<T>* res = p->getNext();
 			p->setNext(res->getNext());
-			res->getNext()->setPrev(p);
+			if (res->getNext() != NULL) res->getNext()->setPrev(p);
+			if (res->getNext() == NULL) LinkedList<T>::tail = p;
 			res->setNext(NULL);
 			res->setPrev(NULL);
 			LinkedList<T>::count--;
@@ -418,9 +421,12 @@ class CustomStack : public DoubleSidedStack<Customer>
 public:
 	CustomStack() : DoubleSidedStack<Customer>()
 	{
-		cout << "\nCustomStack constructor";
+		cout << "\nCustomStack class constructor";
 	}
-	virtual ~CustomStack() { }
+	virtual ~CustomStack()
+	{
+		cout << "\nCustomStack class destructor";
+	}
 
 	// DoubleSidedStack operator[]
 
@@ -430,20 +436,20 @@ public:
 		if (LinkedList<Customer>::count == 0)
 		{
 			LinkedList<Customer>::head = LinkedList<Customer>::tail = pom;
-			DoubleSidedStack<Customer>::count++;
+			LinkedList<Customer>::count++;
 			return pom;
 		}
-		pom->setNext(DoubleSidedStack<Customer>::head);
-		if (pom->getNext() != NULL ) DoubleSidedStack<Customer>::head->setPrev(pom);
-		DoubleSidedStack<Customer>::head = pom;
-		DoubleSidedStack<Customer>::count++;
+		pom->setNext(LinkedList<Customer>::head);
+		if (pom->getNext() != NULL ) LinkedList<Customer>::head->setPrev(pom);
+		LinkedList<Customer>::head = pom;
+		LinkedList<Customer>::count++;
 		return pom;
 	}
 
 	virtual Element<Customer>* pop()
 	{
 		if (LinkedList<Customer>::count == 0) return NULL;
-		Element<Customer>* res = DoubleSidedStack<Customer>::head;
+		Element<Customer>* res = LinkedList<Customer>::head;
 		if (LinkedList<Customer>::count == 1)
 		{
 			LinkedList<Customer>::head = LinkedList<Customer>::tail = NULL;
@@ -451,7 +457,7 @@ public:
 		res->getNext()->setPrev(NULL);
 		LinkedList<Customer>::head = res->getNext();
 		res->setNext(NULL);
-		DoubleSidedStack<Customer>::count--;
+		LinkedList<Customer>::count--;
 		return res;
 	}
 
@@ -471,6 +477,20 @@ public:
 		return find(value, el->getNext());
 	}
 
+	Element<Customer>* find(const char* lastName)
+	{
+		Element<Customer>* p = LinkedList<Customer>::head;
+        for (; p->getInfo().lastname != lastName && p != NULL; p = p->getNext());
+        return p;
+	}
+
+	Element<Customer>* find(const char* lastName, Element<Customer>* el)
+	{
+		if (el->getInfo().lastname == lastName || el==NULL)
+			return el;
+		return find(lastName, el->getNext());
+	}
+
 	// DoubleSidedStack remove
 
 	virtual void filter(bool (*cmp)(Customer), LinkedList<Customer>* dest)
@@ -487,6 +507,27 @@ public:
 			dest->push(cur->getInfo());
 		return filter(cmp, dest, cur->getNext());
 	}
+
+	void filter(int check, LinkedList<Customer>* dest, bool more = false)
+	{
+		for (Element<Customer>* cur = LinkedList<Customer>::head; cur != NULL; cur = cur->getNext())
+		{
+			if (cur->getInfo().averageCheckAmount > check && more)
+	            dest->push(cur->getInfo());
+			if (cur->getInfo().averageCheckAmount < check && !more)
+	            dest->push(cur->getInfo());
+		}
+	}
+
+	void filter(int check, LinkedList<Customer>* dest, Element<Customer>* cur, bool more = false)
+	{
+		if (cur==NULL) return;
+		if (cur->getInfo().averageCheckAmount > check && more)
+	        dest->push(cur->getInfo());
+		if (cur->getInfo().averageCheckAmount < check && !more)
+	        dest->push(cur->getInfo());
+		return filter(check, dest, cur->getNext(), more);
+	}
 };
 
 // ------------------------------------------------------------------------------------------------------------- MY CLASS / CUSTOMER -----------------------------------------------------------------------------------------------------------------
@@ -494,10 +535,10 @@ public:
 class Customer
 {
 public:
-	char* firstname;
-	char* lastname;
-	char* city;
-	char* street;
+	const char* firstname;
+	const char* lastname;
+	const char* city;
+	const char* street;
 	int houseNumber;
 	int apartmentNumber;
 	int accountNumber;
@@ -510,8 +551,8 @@ public:
 		accountNumber = averageCheckAmount = 0;
 	}
 
-	Customer(char* Firstname, char* Lastname,
-			 char* City, char* Street,
+	Customer(const char* Firstname, const char* Lastname,
+			 const char* City, const char* Street,
 			 int HouseNumber, int ApartmentNumber,
 			 int AccountNumber, int AverageCheckAmount)
 	{
@@ -552,6 +593,7 @@ public:
 	}
 
 	friend ostream& operator<<(ostream& s, Customer& value);
+	friend istream& operator>>(istream& s, Customer& value);
 };
 
 ostream& operator<<(ostream& s, Customer& value)
@@ -563,9 +605,33 @@ ostream& operator<<(ostream& s, Customer& value)
 	return s;
 }
 
+// istream& operator>>(istream& s, Customer& cus)
+// {
+// 	cout << "\nEnter fields: ";
+// 	cout << "\nFirstname (char*): ";
+// 	s >> cus.firstname;
+// 	cout << "\nLastname (char*): ";
+// 	s >> cus.lastname;
+// 	cout << "\nCity (char*): ";
+// 	s >> cus.city;
+// 	cout << "\nStreet (char*): ";
+// 	s >> cus.street;
+// 	cout << "\nHouse Number (int): ";
+// 	s >> cus.houseNumber;
+// 	cout << "\nApartment Number (int): ";
+// 	s >> cus.apartmentNumber;
+// 	cout << "\nAccount Number (int): ";
+// 	s >> cus.accountNumber;
+// 	cout << "\nAverage Check Amount (int): ";
+// 	s >> cus.averageCheckAmount;
+// 	return s;
+// }
+
 // ------------------------------------------------------------------------------------------------------------- CUSTOMER / MAIN -----------------------------------------------------------------------------------------------------------------
 
 bool f(double d) { return d>10; }
+
+bool g(Customer c) { return c.averageCheckAmount<500; }
 
 int main()
 {
@@ -641,7 +707,7 @@ int main()
 	Customer c2("Ivan", "Ivanov", "Moscow", "Proletarskaya", 56, 140, 2, 750);
 	Customer c3("Anton", "Dudetski", "Kalach", "Leninskaya", 3, 1, 3, 370);
 	Customer c4("Igor", "Ivanov", "Jeneva", "Kloshevskaya", 40, 32, 4, 2720);
-	Customer c5("Pasha", "Kisanov", "Rio", "Whatevskaya", 1, 2, 5, 525);
+	Customer c5("Pasha", "Isanov", "Rio", "Whatevskaya", 1, 2, 5, 525);
 	Customer customers[] = {c1, c2, c3, c4};
 
 	for (int i = 0; i<4; i++)
@@ -656,21 +722,29 @@ int main()
 	cout << *custom << " custom";
 	custom->insert(c5, custom->find(c4));
 	cout << *custom << " custom after insert(c5, find(c4))";
-	custom->remove(c2);
-	cout << *custom << " custom after remove(c2)";
+	custom->remove(c1);
+	cout << c1;
+	cout << *custom << " custom after remove(c1)";
 
 	LinkedList<Customer>* filteredCustomList = new CustomStack<Customer>();
 
-	// // Ввод значений в custom
-	// cout << *list;
-	// cin >> *list;
-	// cout << *list;
+	// // Ввод значений в Custom
+	// cout << *custom;
+	// cin >> *custom;
+	// cout << *custom;
 
-	// custom->filter(f, filteredList);
-	// cout << *filteredList << " filtered list by double > 10";
+	custom->filter(g, filteredCustomList);
+	cout << *filteredCustomList << " filtered custom list by average check amount < 500";
 
-	// list->filter(f, filteredList, el);
-	// cout << *filteredList << " filtered list + by double > 10 recursion after el";
+	custom->filter(g, filteredCustomList, custom->find(c3));
+	cout << *filteredCustomList << " filtered custom list by average check amount < 500 recursion after c3";
+
+	// ------------------------------- Использование dynamic_cast --------------------------------
+
+	CustomStack<Customer>* castedCustom = dynamic_cast<CustomStack<Customer>*>(custom);
+	castedCustom->push(c4);
+	cout << *castedCustom;
+	cout << *castedCustom->find("Isanov");
 
 	delete custom;
 	delete filteredCustomList;
