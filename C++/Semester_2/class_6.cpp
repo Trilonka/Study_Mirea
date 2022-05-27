@@ -525,6 +525,8 @@ public:
 		averageCheckAmount = AverageCheckAmount;
 	}
 
+	~Customer() { }
+
 	bool operator==(Customer cus)
 	{
 		return firstname == cus.firstname && 
@@ -549,8 +551,6 @@ public:
 			   averageCheckAmount != cus.averageCheckAmount;		
 	}
 
-	~Customer() { }
-
 	friend ostream& operator<<(ostream& s, Customer& value);
 };
 
@@ -565,85 +565,83 @@ ostream& operator<<(ostream& s, Customer& value)
 
 // ------------------------------------------------------------------------------------------------------------- CUSTOMER / MAIN -----------------------------------------------------------------------------------------------------------------
 
-bool f(double d)
-{
-	return d>10;
-}
+bool f(double d) { return d>10; }
 
 int main()
 {
-	// LinkedList<double>* list;
-	// cout << "---------------------------------------------------------------------------STACK WORK------------------------------------------------------------------------------------------";
-	// list = new Stack<double>();
-	// for (int i = 0; i<10; i++)
-	// 	list->push(i*2);
+	LinkedList<double>* list;
+	cout << "---------------------------------------------------------------------------STACK WORK------------------------------------------------------------------------------------------";
+	list = new Stack<double>();
+	for (int i = 0; i<10; i++)
+		list->push(i*2);
 
-	// cout << endl << "operator[](4): " << *list->operator[](4);
-	// cout << endl << "pop(): " << *list->pop();
-	// Element<double>* el = list->find(4);
-	// cout << endl << "el = find(4): " << *el;
-	// cout << endl << "find(14, el): " << *list->find(14, el);
-	// cout << *list << " list";
-	// list->insert(77, list->find(10));
-	// cout << *list << " list after insert(77, find(10))";
-	// list->remove(12);
-	// cout << *list << " list after remove(12)";
+	cout << endl << "operator[](4): " << *list->operator[](4);
+	cout << endl << "pop(): " << *list->pop();
+	Element<double>* el = list->find(4);
+	cout << endl << "el = find(4): " << *el;
+	cout << endl << "find(14, el): " << *list->find(14, el);
+	cout << *list << " list";
+	list->insert(77, list->find(10));
+	cout << *list << " list after insert(77, find(10))";
+	list->remove(12);
+	cout << *list << " list after remove(12)";
 
-	// LinkedList<double>* filteredList = new Stack<double>();
+	LinkedList<double>* filteredList = new Stack<double>();
 
-	// Ввод значений в List
+	// // Ввод значений в List
 	// cout << *list;
 	// cin >> *list;
 	// cout << *list;
 
-	// list->filter(f, filteredList);
-	// cout << *filteredList << " filtered list by double > 10";
+	list->filter(f, filteredList);
+	cout << *filteredList << " filtered list by double > 10";
 
-	// list->filter(f, filteredList, el);
-	// cout << *filteredList << " filtered list + by double > 10 recursion after el";
+	list->filter(f, filteredList, el);
+	cout << *filteredList << " filtered list + by double > 10 recursion after el";
 
-	// delete list;
-	// delete filteredList;
+	delete list;
+	delete filteredList;
 
-	// cout << "\n---------------------------------------------------------------------------DOUBLE SIDED STACK WORK------------------------------------------------------------------------------------------";
-	// list = new DoubleSidedStack<double>();
-	// for (int i = 0; i<10; i++)
-	// 	list->push(i*2-1);
+	cout << "\n---------------------------------------------------------------------------DOUBLE SIDED STACK WORK------------------------------------------------------------------------------------------";
+	list = new DoubleSidedStack<double>();
+	for (int i = 0; i<10; i++)
+		list->push(i*2-1);
 
-	// cout << endl << "operator[](3): " << *list->operator[](3);
-	// cout << endl << "operator[](9): " << *list->operator[](9);
-	// cout << endl << "pop(): " << *list->pop();
-	// el = list->find(7);
-	// cout << endl << "el = find(7): " << *el;
-	// cout << endl << "find(15, el): " << *list->find(15, el);
-	// cout << *list << " list";
-	// list->insert(77, list->find(11));
-	// cout << *list << " list after insert(77, find(11))";
-	// list->remove(3);
-	// cout << *list << " list after remove(3)";
+	cout << endl << "operator[](3): " << *list->operator[](3);
+	cout << endl << "operator[](9): " << *list->operator[](9);
+	cout << endl << "pop(): " << *list->pop();
+	el = list->find(7);
+	cout << endl << "el = find(7): " << *el;
+	cout << endl << "find(15, el): " << *list->find(15, el);
+	cout << *list << " list";
+	list->insert(77, list->find(11));
+	cout << *list << " list after insert(77, find(11))";
+	list->remove(3);
+	cout << *list << " list after remove(3)";
 
-	// filteredList = new DoubleSidedStack<double>();
+	filteredList = new DoubleSidedStack<double>();
 
-	// Ввод значений в List
+	// // Ввод значений в List
 	// cout << *list;
 	// cin >> *list;
 	// cout << *list;
 
-	// list->filter(f, filteredList);
-	// cout << *filteredList << " filtered list by double > 10";
+	list->filter(f, filteredList);
+	cout << *filteredList << " filtered list by double > 10";
 
-	// list->filter(f, filteredList, el);
-	// cout << *filteredList << " filtered list + by double > 10 recursion after el";
+	list->filter(f, filteredList, el);
+	cout << *filteredList << " filtered list + by double > 10 recursion after el";
 
-	// delete list;
-	// delete filteredList;
+	delete list;
+	delete filteredList;
 
-	// cout << "\n---------------------------------------------------------------------------MY ClASS WORK------------------------------------------------------------------------------------------";
+	cout << "\n---------------------------------------------------------------------------MY ClASS WORK------------------------------------------------------------------------------------------";
 	LinkedList<Customer>* custom = new CustomStack<Customer>();
 	Customer c1("Stepan", "Aniskov", "Moscow", "Taganskaya", 123, 13, 1, 150);
 	Customer c2("Ivan", "Ivanov", "Moscow", "Proletarskaya", 56, 140, 2, 750);
-	Customer c3("Anton", "Dudetski", "Kalach", "Leninskaya", 3, 1, 4, 370);
-	Customer c4("Igor", "Ivanov", "Jeneva", "Kloshevskaya", 40, 32, 5, 2720);
+	Customer c3("Anton", "Dudetski", "Kalach", "Leninskaya", 3, 1, 3, 370);
+	Customer c4("Igor", "Ivanov", "Jeneva", "Kloshevskaya", 40, 32, 4, 2720);
+	Customer c5("Pasha", "Kisanov", "Rio", "Whatevskaya", 1, 2, 5, 525);
 	Customer customers[] = {c1, c2, c3, c4};
 
 	for (int i = 0; i<4; i++)
@@ -651,7 +649,31 @@ int main()
 	cout << *custom << " custom";
 	cout << endl << "operator[](2): " << *custom->operator[](2);
 	cout << endl << "operator[](0): " << *custom->operator[](0);
-	
+	cout << endl << "pop(): " << *custom->pop();
+	Element<Customer>* customEl = custom->find(c2);
+	cout << endl << "customEl = find(c2): " << *customEl;
+	cout << endl << "find(c4, c2): " << *custom->find(c4, customEl);
+	cout << *custom << " custom";
+	custom->insert(c5, custom->find(c4));
+	cout << *custom << " custom after insert(c5, find(c4))";
+	custom->remove(c2);
+	cout << *custom << " custom after remove(c2)";
+
+	LinkedList<Customer>* filteredCustomList = new CustomStack<Customer>();
+
+	// // Ввод значений в custom
+	// cout << *list;
+	// cin >> *list;
+	// cout << *list;
+
+	// custom->filter(f, filteredList);
+	// cout << *filteredList << " filtered list by double > 10";
+
+	// list->filter(f, filteredList, el);
+	// cout << *filteredList << " filtered list + by double > 10 recursion after el";
+
 	delete custom;
+	delete filteredCustomList;
+
 	return 0;
 }
