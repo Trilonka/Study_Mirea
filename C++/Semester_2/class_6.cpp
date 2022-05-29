@@ -1,6 +1,12 @@
-#include "Exception.cpp"
+#include "Exception_6.cpp"
 
-// Methods: pop, push, [], insert, remove, find, filter.
+// ------------------------------------------------------------------------------------------------------------- MY_MANIP (100%) -----------------------------------------------------------------------------------------------------------------
+
+ostream& my_manip(ostream& s)
+{
+    s.width(5);
+    return s;
+}
 
 // ------------------------------------------------------------------------------------------------------------- ELEMENT (100%) -----------------------------------------------------------------------------------------------------------------
 
@@ -65,11 +71,13 @@ public:
 template<class T1>
 ostream& operator<<(ostream& s, Element<T1>& el)
 {
+	s << "\n";
+	my_manip(s);
 	s << el.info;
 	return s;
 }
 
-// ------------------------------------------------------------------------------------------------------------- ELEMENT (100%) / LINKED LIST (add exceptions, change filter (watch Custom Stack filter))  -----------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------- ELEMENT (100%) / LINKED LIST (100%)  -----------------------------------------------------------------------------------------------------------------
 
 template<class T>
 class LinkedList
@@ -91,7 +99,7 @@ public:
 
 	LinkedList(T* arr, int len)
 	{
-		if (len < 1) throw "Incorrect array size"; // Negative Array length
+		if (len < 1) throw NegativeSize("Negative Array length", len);
 		Element<T>* current = new Element<T>(arr[0]);
 		head = current;
 		for (int i = 1; i<len; i++)
@@ -130,6 +138,63 @@ public:
 
 	bool isEmpty() { return (LinkedList<T>::count == 0); }
 
+	void save(string fileName)
+	{
+		ofstream fout(fileName);
+        if (fout.is_open())
+        {
+			fout << count << "\n";
+			Element<T>* pom = head;
+			T info;
+			for (int i = 0; i < count; i++)
+			{
+				info = pom->getInfo();
+				fout << info << "\n";
+				pom = pom->getNext();
+			}
+			fout.close();
+        }
+	}
+	void load(string fileName)
+	{
+		ifstream fin;
+		fin.open(fileName);
+		if (fin.is_open())
+		{
+			int ct;
+			fin >> ct;
+
+			if (ct != count)
+			{
+				count = 0;
+				if (head != NULL)
+				{
+					Element<T>* current = head;
+					Element<T>* temp = head->getNext();
+					for (; current != tail; current = temp, temp = temp->getNext())
+						delete current;
+				}
+				head = NULL; tail = NULL;
+				T val;
+				for (int i = 0; i < ct; i++)
+				{
+					fin >> val;
+					push(val);
+				}
+			} else {
+				Element<T>* pom = head;
+				T val;
+				for (int i = 0; i < count; i++)
+				{
+					fin >> val;
+					pom->setInfo(val); 
+					pom = pom->getNext();
+				}
+			}
+			fin.close();
+		}
+	}
+
 	template<class T1>
 	friend ostream& operator<<(ostream& s, LinkedList<T1>& el);
 	template <class T1>
@@ -140,10 +205,11 @@ template<class T1>
 ostream& operator<<(ostream& s, LinkedList<T1>& el)
 {
 	Element<T1>* current;
-	s << "\n(";
+	s << "\n{";
 	for (current = el.head; current->getNext() != NULL; current = current->getNext())
 		s << *current << ", ";
-	s << *current << ")";
+	s << *current;
+	s << "\n}";
 	return s;
 }
 
@@ -162,7 +228,7 @@ istream& operator>>(istream& s, LinkedList<T1>& el)
 	return s;
 }
 
-// ------------------------------------------------------------------------------------------------------------- LINKED LIST (add exceptions, change filter (watch Custom Stack filter)) / STACK (add exceptions) -----------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------- LINKED LIST (100%) / STACK (100%) -----------------------------------------------------------------------------------------------------------------
 
 template<class T> 
 class Stack : public LinkedList<T>
@@ -180,7 +246,10 @@ public:
 
 	virtual Element<T>* operator[](int index)
 	{
-		if(index<0 || index>=LinkedList<T>::count) throw "Incorrect index"; // Negative / Too large index
+		if(index<0 || index>=LinkedList<T>::count)
+
+		if (index < 0) throw NegativeIndex("Negative index in operator [] ", index);
+		if (index >= LinkedList<T>::count) throw TooLargeIndex("Too large index in operator [] ", index);
 
 		Element<T>* current = LinkedList<T>::head;
 
@@ -230,7 +299,7 @@ public:
 	{
 		if (LinkedList<T>::head == NULL)
 		{
-			if (predecessor != NULL) throw "Predecessor not exists"; // Stack element not exists
+			if (predecessor != NULL) throw ElementNotExists("Stack predecessor in inserts not exists: ", "NULL");
 			return push(value);
 		}
 		if (predecessor == NULL)
@@ -305,7 +374,7 @@ public:
 
 	virtual void filter(T check, LinkedList<T>* dest, bool more)
 	{
-		for (Element<Customer>* cur = LinkedList<Customer>::head; cur != NULL; cur = cur->getNext())
+		for (Element<T>* cur = LinkedList<T>::head; cur != NULL; cur = cur->getNext())
 		{
 			if (cur->getInfo() > check && more)
 	            dest->push(cur->getInfo());
@@ -325,7 +394,7 @@ public:
 	}
 };
 
-// ------------------------------------------------------------------------------------------------------------- STACK (add exceptions) / DOUBLE SIDED STACK (add exceptions) -----------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------- STACK (100%) / DOUBLE SIDED STACK (100%) -----------------------------------------------------------------------------------------------------------------
 
 template<class T>
 class DoubleSidedStack : public Stack<T>
@@ -342,7 +411,8 @@ public:
 
 	virtual Element<T>* operator[](int index)
 	{
-		if(index<0 || index>=LinkedList<T>::count) throw "Incorrect index"; // Negative / Too large index
+		if (index < 0) throw NegativeIndex("Negative index in operator [] ", index);
+		if (index >= LinkedList<T>::count) throw TooLargeIndex("Too large index in operator [] ", index);
 
 		Element<T>* current;
 		if (index < LinkedList<T>::count/2)
@@ -388,7 +458,7 @@ public:
 	{
 		if (LinkedList<T>::head == NULL)
 		{
-			if (predecessor != NULL) throw "Predecessor not exists"; // Stack element not exists
+			if (predecessor != NULL) throw ElementNotExists("DoubleSidedStack predecessor in insert not exists: ", "NULL");
 			return push(value);
 		}
 		if (predecessor == NULL)
@@ -436,7 +506,7 @@ public:
 	// filter ищет по значению, поэтому нет смысла переопределять его для DoubleSidedStack
 };
 
-// ------------------------------------------------------------------------------------------------------------- DOUBLE SIDED STACK (add exceptions) / MY CLASS (protected) -----------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------- DOUBLE SIDED STACK (100%) / CUSTOM STACK (protected) -----------------------------------------------------------------------------------------------------------------
 
 template <class Customer>
 class CustomStack : public DoubleSidedStack<Customer>
@@ -554,7 +624,7 @@ public:
 	}
 };
 
-// ------------------------------------------------------------------------------------------------------------- MY CLASS (add protected) / CUSTOMER -----------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------- CUSTOM STACK (add protected) / CUSTOMER (100%) -----------------------------------------------------------------------------------------------------------------
 
 class Customer
 {
@@ -609,48 +679,78 @@ public:
 			   averageCheckAmount != cus.averageCheckAmount;		
 	}
 
+	bool operator<(Customer cus)
+	{
+		return averageCheckAmount < cus.averageCheckAmount;
+	}
+
+	bool operator>(Customer cus)
+	{
+		return averageCheckAmount > cus.averageCheckAmount;
+	}
+
 	friend ostream& operator<<(ostream& s, Customer& value);
 	friend istream& operator>>(istream& s, Customer& value);
 };
 
 ostream& operator<<(ostream& s, Customer& value)
 {
-	s <<"("<<value.firstname<<", "<<value.lastname<<", "
-	  <<value.city<<", "<<value.street<<", "<<value.houseNumber<<", "
-	  << value.apartmentNumber<<", "<<value.accountNumber<<", "
-	  <<value.averageCheckAmount<<")";
+	if (typeid(s) == typeid(ofstream))
+	{
+		s << value.firstname << " "
+		  << value.lastname << " "
+		  << value.city << " "
+		  << value.street << " "
+		  << value.houseNumber << " "
+		  << value.apartmentNumber << " "
+		  << value.accountNumber << " "
+		  << value.averageCheckAmount << "\n";
+	} else 
+	{
+		s <<"("<<value.firstname<<", "<<value.lastname<<", "
+		  <<value.city<<", "<<value.street<<", "<<value.houseNumber<<", "
+	  	  << value.apartmentNumber<<", "<<value.accountNumber<<", "
+		  <<value.averageCheckAmount<<")";
+	}
 	return s;
 }
 
-// istream& operator>>(istream& s, Customer& cus)
-// {
-// 	cout << "\nEnter fields: ";
-// 	cout << "\nFirstname (char*): ";
-// 	s >> cus.firstname;
-// 	cout << "\nLastname (char*): ";
-// 	s >> cus.lastname;
-// 	cout << "\nCity (char*): ";
-// 	s >> cus.city;
-// 	cout << "\nStreet (char*): ";
-// 	s >> cus.street;
-// 	cout << "\nHouse Number (int): ";
-// 	s >> cus.houseNumber;
-// 	cout << "\nApartment Number (int): ";
-// 	s >> cus.apartmentNumber;
-// 	cout << "\nAccount Number (int): ";
-// 	s >> cus.accountNumber;
-// 	cout << "\nAverage Check Amount (int): ";
-// 	s >> cus.averageCheckAmount;
-// 	return s;
-// }
-
-ostream& my_manip(ostream& s)
+istream& operator>>(istream& s, Customer& value)
 {
-    s.width(5);
-    return s;
+	if (typeid(s) == typeid(ifstream))
+	{
+		s >> value.firstname
+		  >> value.lastname
+		  >> value.city
+		  >> value.street
+		  >> value.houseNumber
+		  >> value.apartmentNumber
+		  >> value.accountNumber
+		  >> value.averageCheckAmount;
+	} else 
+	{
+		cout << "\nEnter fields: ";
+		cout << "\nFirstname (string): ";
+		s >> value.firstname;
+		cout << "\nLastname (string): ";
+		s >> value.lastname;
+		cout << "\nCity (string): ";
+		s >> value.city;
+		cout << "\nStreet (string): ";
+		s >> value.street;
+		cout << "\nHouse Number (int): ";
+		s >> value.houseNumber;
+		cout << "\nApartment Number (int): ";
+		s >> value.apartmentNumber;
+		cout << "\nAccount Number (int): ";
+		s >> value.accountNumber;
+		cout << "\nAverage Check Amount (int): ";
+		s >> value.averageCheckAmount;
+	}
+	return s;
 }
 
-// ------------------------------------------------------------------------------------------------------------- CUSTOMER / MAIN -----------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------- CUSTOMER (100%) / MAIN (all checked) -----------------------------------------------------------------------------------------------------------------
 
 bool f(double d) { return d>10; }
 
@@ -733,9 +833,9 @@ int main()
 	Customer c4("Igor", "Ivanov", "Jeneva", "Kloshevskaya", 40, 32, 4, 2720);
 	Customer c5("Pasha", "Isanov", "Rio", "Whatevskaya", 1, 2, 5, 525);
 	Customer customers[] = {c1, c2, c3, c4};
-
 	for (int i = 0; i<4; i++)
 		custom->push(customers[i]);
+
 	cout << *custom << " custom";
 	cout << endl << "operator[](2): " << *custom->operator[](2);
 	cout << endl << "operator[](0): " << *custom->operator[](0);
@@ -763,15 +863,22 @@ int main()
 	custom->filter(g, filteredCustomList, custom->find(c3));
 	cout << *filteredCustomList << " filtered custom list by average check amount < 500 recursion after c3";
 
-	// ------------------------------- Использование dynamic_cast --------------------------------
+	cout << "\n---------------------------------------------------------------------------DYNAMIC_CAST AND FILE SAVE/LOAD------------------------------------------------------------------------------------------";
 
 	CustomStack<Customer>* castedCustom = dynamic_cast<CustomStack<Customer>*>(custom);
 	castedCustom->push(c4);
 	cout << *castedCustom;
+	cout << *filteredCustomList;
 	cout << *castedCustom->find("Isanov");
+
+	custom->save("list.txt");
+	filteredCustomList->load("list.txt");
+	cout << *filteredCustomList;
 
 	delete custom;
 	delete filteredCustomList;
+
+	cout << "\n---------------------------------------------------------------------------PROGRAM END------------------------------------------------------------------------------------------";
 
 	return 0;
 }
