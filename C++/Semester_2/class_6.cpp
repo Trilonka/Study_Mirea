@@ -125,6 +125,8 @@ public:
 	virtual Element<T>* remove(T value) = 0;
 	virtual void filter(bool (*cmp)(T), LinkedList<T>* dest) = 0;
 	virtual void filter(bool (*cmp)(T), LinkedList<T>* dest, Element<T>* cur) = 0;
+	virtual void filter(T, LinkedList<T>* dest, bool more) = 0;
+	virtual void filter(T, LinkedList<T>* dest, Element<T>* cur, bool more) = 0;
 
 	bool isEmpty() { return (LinkedList<T>::count == 0); }
 
@@ -300,6 +302,27 @@ public:
 			dest->push(cur->getInfo());
 		return filter(cmp, dest, cur->getNext());
 	}
+
+	virtual void filter(T check, LinkedList<T>* dest, bool more)
+	{
+		for (Element<Customer>* cur = LinkedList<Customer>::head; cur != NULL; cur = cur->getNext())
+		{
+			if (cur->getInfo() > check && more)
+	            dest->push(cur->getInfo());
+			if (cur->getInfo() < check && !more)
+	            dest->push(cur->getInfo());
+		}
+	}
+
+	virtual void filter(T check, LinkedList<T>* dest, Element<T>* cur, bool more)
+	{
+		if (cur==NULL) return;
+		if (cur->getInfo() > check && more)
+	        dest->push(cur->getInfo());
+		if (cur->getInfo() < check && !more)
+	        dest->push(cur->getInfo());
+		return filter(check, dest, cur->getNext(), more);
+	}
 };
 
 // ------------------------------------------------------------------------------------------------------------- STACK (add exceptions) / DOUBLE SIDED STACK (add exceptions) -----------------------------------------------------------------------------------------------------------------
@@ -413,7 +436,7 @@ public:
 	// filter ищет по значению, поэтому нет смысла переопределять его для DoubleSidedStack
 };
 
-// ------------------------------------------------------------------------------------------------------------- DOUBLE SIDED STACK (add exceptions) / MY CLASS -----------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------- DOUBLE SIDED STACK (add exceptions) / MY CLASS (protected) -----------------------------------------------------------------------------------------------------------------
 
 template <class Customer>
 class CustomStack : public DoubleSidedStack<Customer>
@@ -477,14 +500,14 @@ public:
 		return find(value, el->getNext());
 	}
 
-	Element<Customer>* find(const char* lastName)
+	Element<Customer>* find(string lastName)
 	{
 		Element<Customer>* p = LinkedList<Customer>::head;
         for (; p->getInfo().lastname != lastName && p != NULL; p = p->getNext());
         return p;
 	}
 
-	Element<Customer>* find(const char* lastName, Element<Customer>* el)
+	Element<Customer>* find(string lastName, Element<Customer>* el)
 	{
 		if (el->getInfo().lastname == lastName || el==NULL)
 			return el;
@@ -508,53 +531,47 @@ public:
 		return filter(cmp, dest, cur->getNext());
 	}
 
-	void filter(int check, LinkedList<Customer>* dest, bool more = false)
+	virtual void filter(Customer check, LinkedList<Customer>* dest, bool more = false)
 	{
 		for (Element<Customer>* cur = LinkedList<Customer>::head; cur != NULL; cur = cur->getNext())
 		{
-			if (cur->getInfo().averageCheckAmount > check && more)
+			if (cur->getInfo().averageCheckAmount > check.averageCheckAmount && more)
 	            dest->push(cur->getInfo());
-			if (cur->getInfo().averageCheckAmount < check && !more)
+			if (cur->getInfo().averageCheckAmount < check.averageCheckAmount && !more)
 	            dest->push(cur->getInfo());
 		}
 	}
 
-	void filter(int check, LinkedList<Customer>* dest, Element<Customer>* cur, bool more = false)
+	virtual void filter(Customer check, LinkedList<Customer>* dest,
+					    Element<Customer>* cur, bool more = false)
 	{
 		if (cur==NULL) return;
-		if (cur->getInfo().averageCheckAmount > check && more)
+		if (cur->getInfo().averageCheckAmount > check.averageCheckAmount && more)
 	        dest->push(cur->getInfo());
-		if (cur->getInfo().averageCheckAmount < check && !more)
+		if (cur->getInfo().averageCheckAmount < check.averageCheckAmount && !more)
 	        dest->push(cur->getInfo());
 		return filter(check, dest, cur->getNext(), more);
 	}
 };
 
-// ------------------------------------------------------------------------------------------------------------- MY CLASS / CUSTOMER -----------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------- MY CLASS (add protected) / CUSTOMER -----------------------------------------------------------------------------------------------------------------
 
 class Customer
 {
 public:
-	const char* firstname;
-	const char* lastname;
-	const char* city;
-	const char* street;
+	string firstname;
+	string lastname;
+	string city;
+	string street;
 	int houseNumber;
 	int apartmentNumber;
 	int accountNumber;
 	int averageCheckAmount;
 
-	Customer()
-	{
-		firstname = lastname = city = street = NULL;
-		houseNumber = apartmentNumber =
-		accountNumber = averageCheckAmount = 0;
-	}
-
-	Customer(const char* Firstname, const char* Lastname,
-			 const char* City, const char* Street,
-			 int HouseNumber, int ApartmentNumber,
-			 int AccountNumber, int AverageCheckAmount)
+	Customer(string Firstname = "unknown", string Lastname = "unknown",
+			 string City = "unknown", string Street = "unknown",
+			 int HouseNumber = 0, int ApartmentNumber = 0,
+			 int AccountNumber = 0, int AverageCheckAmount = 0)
 	{
 		firstname = Firstname;
 		lastname = Lastname;
@@ -627,6 +644,12 @@ ostream& operator<<(ostream& s, Customer& value)
 // 	return s;
 // }
 
+ostream& my_manip(ostream& s)
+{
+    s.width(5);
+    return s;
+}
+
 // ------------------------------------------------------------------------------------------------------------- CUSTOMER / MAIN -----------------------------------------------------------------------------------------------------------------
 
 bool f(double d) { return d>10; }
@@ -635,6 +658,7 @@ bool g(Customer c) { return c.averageCheckAmount<500; }
 
 int main()
 {
+	my_manip(cout);
 	LinkedList<double>* list;
 	cout << "---------------------------------------------------------------------------STACK WORK------------------------------------------------------------------------------------------";
 	list = new Stack<double>();
