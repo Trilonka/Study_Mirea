@@ -82,7 +82,7 @@ int my(double n,...)
 int main()
 {
     //my_printf("Int value = &d, Fraction = %f", 2, F);
-    
+    // hi man
     double a = product(2.0, 3.0, 5.0, 0.0);
     int b = Max(3, a, 5, 7);
     cout << a << " " << b << endl;
