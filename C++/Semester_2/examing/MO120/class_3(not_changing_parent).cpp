@@ -18,42 +18,14 @@ public:
 	{
 		cout << "\nMyArrayParentTemplate constructor";
 		
-		ptr = new double[Dimension];
 		capacity = Dimension;
 		count = 0;
 	}
-
-	MyArrayParentTemplate(T* arr, int len)
-	{
-		cout << "\nMyArrayParentTemplate constructor" << endl;
-		capacity = (len >= 100) ? len*2 : 100;
-		count = len;
-		ptr = new double[capacity];
-		for(int i = 0; i<len; i++) {
-			ptr[i] = arr[i];
-		}
-	}
-
-	MyArrayParentTemplate(const MyArrayParentTemplate& P)
-	{
-		cout << "\nMyArrayParentTemplate copy constructor" << endl;
-        capacity = P.capacity;
-        count = P.count;
-        ptr = new double[capacity];
-        for(int i = 0; i < count; i++) {
-            ptr[i] = P.ptr[i];
-        }
-    }
 
 	//деструктор
 	~MyArrayParentTemplate()
 	{
 		cout << "\nMyArrayParentTemplate destructor";
-		if (ptr != NULL)
-		{
-			delete[] ptr;
-			ptr = NULL;
-		}
 	}
 
 	//обращение к полям
@@ -85,21 +57,17 @@ public:
 	MyArrayChildTemplate(int Dimension = 100) : MyArrayParentTemplate<T>(Dimension)
 	{
 		cout << "\nMyArrayChildTemplate constructor" << endl;
-	}
-
-	MyArrayChildTemplate(T* arr, int len) : MyArrayParentTemplate<T>(arr, len)
-	{
-		cout << "\nMyArrayChildTemplate constructor" << endl;
-	}
-
-	MyArrayChildTemplate(const MyArrayChildTemplate& P) : MyArrayParentTemplate<T>(P)
-	{
-		cout << "\nMyArrayChildTemplate copy constructor" << endl;
+		MyArrayParentTemplate<T>::ptr = new T[Dimension];
 	}
 
 	~MyArrayChildTemplate()
 	{
 		cout << "\nMyArrayChildTemplate destructor" << endl;
+		if (MyArrayParentTemplate<T>::ptr != NULL)
+		{
+			delete[] MyArrayParentTemplate<T>::ptr;
+			MyArrayParentTemplate<T>::ptr = NULL;
+		}
 	}
 
 	T& operator()(const char* key)
