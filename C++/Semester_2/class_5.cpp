@@ -118,6 +118,70 @@ public:
         }
     }
 
+    // void multi(int n) //                 Multi... end... sea... sun...
+    // {
+    //     BaseMatrix result(3,3);
+    //     for (int i = 0; i<3; i++) {
+    //         for (int j = 0; j<3; j++) {
+    //             result.ptr[i][j] = 0;
+    //             for (int k = 0; k<3; k++) {
+    //                 result.ptr[i][j] += ptr[i][k]*ptr[k][j];
+    //             }
+    //         }
+    //     }
+    // }
+
+    // bool det() //                              det != 0 ????
+    // {
+    //     int ans = 1;
+    //     double epsilon = 1e-7;
+    //     int s = 1;
+    //     BaseMatrix c(*this);
+    //     for (int k = 0; k<height; k++) {
+    //         double absval = 0;
+    //         int d_k = 0;
+    //         find_max(k, absval, d_k);
+    //         if (d_k > 1) {
+    //             swap(&c, k, k+d_k-1);
+    //             s*=-1;
+    //         } 
+    //         for (int i = k+1; i<height; i++) {
+    //             double t = ptr[i][k]/ptr[k][k];
+    //             for (int j = k; j<width; j++) {
+    //                 ptr[i][j] = ptr[i][j] - t*ptr[k][j];
+    //             }
+    //         }
+    //     }
+
+    //     for (int i = 0; i<height; i++) {
+    //         ans*=ptr[i][i];
+    //     }
+
+    //     return ans;
+    // }
+
+    // void find_max(int k, double& ab, int& d_k)
+    // {  
+    //     ab = abs(ptr[k][k]);
+    //     int p_i = 0;
+    //     for (int i = k; i<height; i++) {
+    //         if (abs(ptr[i][k]) > ab) {
+    //             ab = abs(ptr[i][k]); 
+    //             p_i = i;
+    //         }
+    //     }
+    //     d_k = p_i - k;
+    // }
+
+    // void swap(BaseMatrix* base, int a, int b)
+    // {
+    //     for (int i = 0; i<width; i++) {
+    //         T pom = base->ptr[a][i];
+    //         base->ptr[a][i] = base->ptr[b][i];
+    //         base->ptr[b][i] = pom;
+    //     }
+    // }
+
     template <class T1>
     friend ostream& operator<<(ostream& ustream, BaseMatrix<T1>& obj);
     template <class T1>
