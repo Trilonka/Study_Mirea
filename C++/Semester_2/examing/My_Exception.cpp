@@ -10,7 +10,7 @@ using namespace std;
 class Exception : public exception
 {
 protected:
-	//сообщение об ошибке
+
 	char *str;
 
 public:

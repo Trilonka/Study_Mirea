@@ -18,7 +18,7 @@ public:
 	{
 		cout << "\nMyArrayParentTemplate constructor";
 		
-		ptr = new double[Dimension];
+		ptr = new T[Dimension];
 		capacity = Dimension;
 		count = 0;
 	}
@@ -28,7 +28,7 @@ public:
 		cout << "\nMyArrayParentTemplate constructor" << endl;
 		capacity = (len >= 100) ? len*2 : 100;
 		count = len;
-		ptr = new double[capacity];
+		ptr = new T[capacity];
 		for(int i = 0; i<len; i++) {
 			ptr[i] = arr[i];
 		}
@@ -39,7 +39,7 @@ public:
 		cout << "\nMyArrayParentTemplate copy constructor" << endl;
         capacity = P.capacity;
         count = P.count;
-        ptr = new double[capacity];
+        ptr = new T[capacity];
         for(int i = 0; i < count; i++) {
             ptr[i] = P.ptr[i];
         }

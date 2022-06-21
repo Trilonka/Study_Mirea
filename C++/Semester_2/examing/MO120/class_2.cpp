@@ -6,20 +6,20 @@ using namespace std;
 class Point
 {
 private:
-    int x;
-    int y;
+    double x;
+    double y;
 public:
     Point()
     {
         x = y = 0;
     }
 
-    Point(int t)
+    Point(double t)
     {
         x = y = t;
     }
 
-    Point(int x, int y)
+    Point(double x, double y)
     {
         this->x = x;
         this->y = y;
@@ -30,13 +30,13 @@ public:
         return sqrt(x*x + y*y) < sqrt(other.x*other.x + other.y*other.y);
     }
 
-    bool operator==(int other_x)
+    bool operator==(double other_x)
     {
         return x == other_x;
     }
 };
 
-bool operator==(int other_x, Point& x)
+bool operator==(double other_x, Point& x)
 {
     return x == other_x;
 }
